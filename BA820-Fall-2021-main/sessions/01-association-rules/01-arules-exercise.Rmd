@@ -1,0 +1,133 @@
+---
+title: "Assocation Rules Hands-On Exercise"
+subtitle: "Mining frequent patterns on co-occurring items"
+author: "Brock Tibert"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: default
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(comment = NA)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.retina = 3)
+knitr::opts_chunk$set(cache = FALSE)
+```
+
+
+# Business Challenge
+
+The marketing division at your organization needs help understanding the patterns of behavior in how potential customers interact with various campaigns, take action with your company, and potentially, ulimately convert.  Right now, they are interested in identify the patterns in how customers interface with various steps along the sales funnel.  Luckily, the marketing division has a pretty robust data warehouse, and they have supplied you with the campaigns for a given cohort of prospective customers.  This is  `questrom.datasets.crm_campaign` from Google Big Query.
+
+- `crm_id` = a unique user given to each contact in the marketing database
+- `contcode` = the specific marketing __interaction__ that was tracked
+- `contcat` = a higher-level marketing category.  Each `contcode` belongs to one, and only one, `contcat`.
+
+Association Rules mining is an unsupervised technique, but in this context, we have a trick up our sleeve.  We can use one of the interactions, `contcode = CMO`, to help better frame the pathways (rules) to success.  We will revisit this in later questions, but it is important to think about why having this interaction can help guide our analysis.
+
+```{marginfigure}
+Since this is our conversion interaction, we can use this as the `RHS` to filter rules pathways to the conversion, but that doesn't mean there isn't insights to be gained about how certain marketing interactions could be paired together.
+```
+
+
+
+## Your Team's Challenge
+
+Bring in the dataset into your python session and explore the data.  Perform any necessary data cleaning that you deem appropriate given the task. 
+
+```{marginfigure}
+Hint: missing data and records that will not help us fit a "recommendation" model.
+```
+
+Now that you have the dataset read into `python`, your exercise is to do the following:
+
+
+1.  Apply the apriori algorithm in order to mine rules about the books dataset
+1.  Explore the rules generated
+1.  Business Problem: Now that the rules and _structure_ of the transactions have been explored, fit a new model with `CMO` as part of the RHS.
+
+<hr>
+
+## Exercise 1:
+
+Explore the data, and then coerce it into a format that can be used by `mlxtend`. 
+
+```{marginfigure}
+[documentation examples](http://rasbt.github.io/mlxtend/user_guide/frequent_patterns/apriori/)
+```
+
+
+Hints:
+
+- this will require that you use your python skills to reshape and __clean__ the data!
+- the user/customer id can be viewed as centering the transaction
+- the `contcode` is the item we are looking to mine for patterns
+
+
+
+<hr>
+
+## Exercise 2:
+
+```{marginfigure}
+TIP:  The documentation can be your friend!
+```
+
+Now that we have have the transactions loaded into the appropriate format,  identify the following:
+
+1.  Explore the transactions
+1.  The ten most frequent interactions (count, not frequency)
+1.  The average number of interactions per user (id)
+1.  Summarize the __item frequency__ to better understand the support.
+
+
+<hr>
+
+## Exercise 3:
+
+Generate `rules` using the apriori algorithm.
+
+HINT:  Start by using `.0002` for the support in order to give us a chance to explore the rules and prune later.  You can always explore different settings down the road.
+
+
+
+<hr>
+
+## Exercise 4:
+
+```{marginfigure}
+Things to explore:  How many rules, the distribution of rule length, and a review of the summary stats for the 3 core metrics
+
+
+```
+
+
+We can start to explore the rules generated.  For this section:
+
+1.  Extract the summary of the rules.
+1.  __Sample__ 10 rules to get a sense of the output from the algorithm
+1.  Print out the top 10 rules based on lift
+1.  Tricky!  Get the top 10 rules based on count
+1.  Tricky!  Keep only the rules with 6 items on the `LHS`.  How many are there?  Look at a sample to confirm.
+
+
+
+<hr>
+
+## Exerise 5:
+
+In this section, let's dive deeper into our organization's challenge.  We want to learn more about the various interactions our CRM contacts had as they went through the sales funnel.
+
+1.  Ensure that the conversion interaction `CMO` is in the `RHS`.  Use the support of `.0002` and a confidence of 25%.
+
+2.  Inspect the rules to learn more about the co-occurrences and the path to conversion.
+
+3.  Your marketing team wants to explore the fastest path to conversions.  What might you recommend to solve this problem and identify a particular marketing effort (interaction) that they should explore in this context?
+
+
+

@@ -1,0 +1,166 @@
+---
+title: "Hierarchical Clustering Hands-On Exercise"
+subtitle: "Player Segmentation and Team Construction in the NHL"
+author: "Brock Tibert"
+date: "`r Sys.Date()`"
+output:
+  tufte::tufte_html: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(comment = NA)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.retina = 3)
+knitr::opts_chunk$set(cache = FALSE)
+```
+
+
+# Business Challenge
+
+With the start of the NHL season underway, the Boston Bruins are looking to better understand the structure of player performance across the league.  Having lost in the Stanley Cup recently, they want to learn more about various player segments and how teams, on balance, are constructed across those segments.  
+
+Simply, if you think of a professional sports team as an investment portfolio, is there evidence to suggest that successful teams are constructed a certain way?  In the short run, they are only concerned with skaters that are __established__ in the NHL, and are not willing to review the Goalie position.
+
+Your task:
+
+Using skater performance from last season, identify segments, or clusters, based on player performance.  With these clusters identified, profile both the clusters overall, as well as the distribution of segments by team.
+
+Are certain teams more successful given their roster layout?
+
+### About this challenge
+
+This challenge aims to reinforce the following:
+
+- Data manipulation and wrangling in `python`
+- The use of distance metrics
+- An application of hierarchical clustering
+
+Knowledge about hockey or sport is not required; this is just a data set that is well suited for hierarchical clustering and allows us see how the output from one task can be blended with other data sets for strategic decision making.
+
+
+## Setup
+
+The dataset for this exercise can be found in Big Query:
+
+- `questrom.datasets.hockey-players`
+- `questrom.datasets.hockey-teams`
+
+Of course, you should refer to the class notes for the imports and tools that you will use in python.
+
+
+From the business problem, we read that the Bruins want *established* NHL players.  Let's remove any record from the `players` data set that did not play in at least 10 games and have 100 minutes played.
+
+The columns you can use for this task are:
+
+- `gp` or games played
+- `toi` or time on ice (in minutes)
+
+
+That should remove a good number of rows, but keeps just the core players on any given team.
+
+A quick note on the data sets:
+
+1.  `players` = these are players and their *aggregate* performance over the course of a season.  For more on what the column names, refer to the source of the data here:
+
+```{marginfigure}
+For a reference on player stats and a mapping to the column definitions
+https://www.hockey-reference.com/leagues/NHL_2019_skaters.html
+```
+
+1.  `teams` = *aggregate* performance of teams for the 2018-19 season.  Information about the columns can be found here:
+
+```{marginfigure}
+For a reference on team stats
+https://www.hockey-reference.com/leagues/NHL_2019.html
+```
+
+
+## Your Team Challenge
+
+Now that you have the data set read into `python`, as a group your exercise is to do the following:
+
+1.  Exploratory Data Analysis of the `players` data set
+1.  Data Cleaning and transformation of the data set
+1.  Apply Hierarchical Clustering to determine player segmentation
+1.  Profile the Clusters solution you generated
+1.  Business Problem: Profile the construction of teams
+
+<hr>
+
+
+## Exercise 1: Exploratory Data Analysis
+
+In this section, summarize the data and review it.  It doesn't matter that you may not be a hockey expert, but look for the basics.  What are the properties of the data set?  Are there missing values?
+
+> Note: reviewing/exploring a dataset with little context is common as an analyst. Often times we will be handed a dataset by a client and left to figure out "what is important"
+
+
+<hr>
+
+## Exercise 2: Data Cleaning and Transformations
+
+Now that we have a sense of the data, we can begin to prepare and clean our data sets in order to move onto the analytical portion of the project.
+
+In this section:
+
+1. We will clean the missing data
+  - For this exercise, replace the missing values in `fo_pct` with zeros
+1. Transform columns (`g`, `a`, and `pts`) to change the units of the observation.  For these three columns, adjust the measurement by the column `gp`
+
+
+```{marginfigure}
+For this, aggregate stats reward players that played in more games.  If we didn't transform the data, that's ok, but for a few of the columns, we can transform the statistics into _rate_ statistics.
+
+```
+
+
+1. Prepare our data sets for clustering and profiling.  Note:  The majority of the time, we are using numeric features for our clustering.
+
+
+## Exercise 3: Apply Hierarchical Clustering
+
+For this section, cluster the players via their statistics using hierarchical clustering.
+
+You should consider the following, but as analyst, it's up to you on how to arrive at your cluster solution.
+
+- The number of clusters/segments generated should be between 4-7
+  - Even if you are not an expert at hockey analytics, stepping back, most business cases tend to want to manage smaller numbers of clusters. 
+- You should consider using different distance methods, as well as linkage methods within `linkage`
+- Consider the number of records in each sample.  There _may_ be cases where some of the clusters have fewer records than others, that's ok, but having a cluster with 3 records is probably not useful in a practical sense, regardless if this is sports analytics or an exercise for customer segmentation at a retail firm.
+
+I am leaving this up to you as an analyst.  You can try to divide and conquer different approaches, but I recommend starting basic and getting through the exercise once, and then revise later if you want to optimize or improve your assessment of the data related to the business problem.
+
+
+<hr>
+
+
+## Exercise 4:  Profile the Cluster Solution you Chose
+
+Profile the cluster solution you chose.
+
+There are all sorts of ways to do this, so do the best you can!  There are no right/wrong ways to profile clusters, but keep these tips and tricks in mind:
+
+- Each cluster acts as a group we can provide summary stats for
+- We want to compare how our clusters compare on the inputs we used for the distance matrix.  
+- You can summarize the data any way you like, but I tend to start with averages because they are easier to explain to clients and non-technical end users.
+
+
+<hr>
+
+## Exercise 5: Cluster Analysis and Team Construction
+
+Now that we have generated a cluster solution, let's explore how it fits across team construction.
+
+Below are the recommended steps:
+
+1.  Put the clusters assignments onto the a dataset that may represent the `player's attributes` 
+1.  Attempt to summarize the construction of a team by the types of players they have. Or more simply, what is tbe breakdown of their team by cluster assignments?  
+
+

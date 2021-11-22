@@ -1,0 +1,541 @@
+# About
+
+# Will use Colab for this, in attempts to keep the tooling easy to use today.
+
+# https://colab.research.google.com/drive/1eLkuVAgcDqS_gUPdEACdqhOO0JdK-GV5?usp=sharing
+
+# fall 2021 updates
+# - intro spacy for textblob, as we are still operating on a doc
+# - sentiment api from google
+# - fit a ML model from data annotation setup (label studio setup framing)
+##
+
+##############################################################################
+# Foundations in Text Analytics - Sentiment Analysis
+##
+# Learning goals:
+# - reinforce text as a datasource
+# - python packages for handling our corpus for these specific tasks
+# - Sentiment analysis
+# - Sentiment analysis via ML
+# - Build your own sentiment classifier!
+##############################################################################
+
+# installs
+#! pip install newspaper3k
+#! pip install wordcloud
+#! pip install emoji
+#! pip install nltk
+#! pip install scikit-plot
+#! pip install umap-learn
+#! pip install afinn
+#! pip install -U spacy
+#! pip install spacytextblob
+
+# imports
+from spacytextblob.spacytextblob import SpacyTextBlobcli download("en_core_web_sm")
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from nltk.tokenize import TweetTokenizer
+from spacy import cli
+from nltk.tokenize import word_tokenize, RegexpTokenizer, WordPunctTokenizer, TweetTokenizer
+from umap import UMAP
+from newspaper import Article
+from afinn import Afinn
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import scikitplot as skplot
+
+# some "fun" packages
+from wordcloud import WordCloud
+import emoji
+
+import re
+
+# text imports
+
+import spacy
+from spacytextblob.spacytextblob import SpacyTextBlob
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, TfidfVectorizer
+import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+
+
+# let's get warmed up!
+##
+# we will be using the Big Query questrom.datasets.airline-intents
+##
+# select all the data from the table but only keep rows where the intent values are
+## atis_airfare, atis_ground_service, atis_airline, atis_abbreviation
+##
+# tokenize the data, and apply tfidf weighting
+# use UMAP to reconstruct the dtm to 2 embeddings
+# visualize the dataset via a scatterplot, and overlay the intent as a color on the plot
+# Does UMAP help us sort the intents?
+# answer: no, they are too close to each other
+
+
+SQL = "SELECT * from `questrom.datasets.airline-intents` where intent IN ('atis_airfare', 'atis_ground_service', 'atis_airline', 'atis_abbreviation')"
+msgs = pd.read_gbq(SQL, "ba820-yx")
+
+# what do we have
+msgs.shape
+
+# tokenize the data
+cv = TfidfVectorizer()
+dtm = cv.fit_transform(msgs.text)
+
+
+# umap
+umap = UMAP()
+embeds = umap.fit_transform(dtm)
+
+embeds.shape
+
+# plot
+plt.figure(figsize=(8, 4))
+sns.scatterplot(x=embeds[:, 0], y=embeds[:, 1], hue=msgs.intent, alpha=.4)
+plt.show()
+
+
+# NLTK parsing
+# Quick highlight that there are pre-built tools!
+##
+# we may not have to reinvent the wheel!
+# NLTK has some built in tooling we can leverage!
+# and trust me, other toolkits have their own approaches too!
+
+
+# we may also need to download a tool to help with (sentence) parsing amongst other tasks
+nltk.download('punkt')
+
+corpus = ['I want my MTV! www.mtv.com',
+          "Can't I have it all for $5.00 @customerservice #help"]
+
+# want to zoom in on a tokenizer to help with twitter, and perhaps other social data
+social = TweetTokenizer()
+
+tokens_social = []
+for doc in corpus:
+    tokens_social.append(social.tokenize(doc))
+
+# what do we have
+tokens_social
+
+
+# Sentiment 1
+##
+# We will start basic = word/dictionary-based approach
+##
+# IDEA:  each word gets a score, sum up the score, thats it!
+# it's intuitive, easy to explain, and customizable
+##
+## Afinn - 2011
+# https://github.com/fnielsen/afinn
+##
+# TLDR
+# limited language support, but highlights an important concept
+# build our dictionary, and score
+# could even be emoticons!
+# https://github.com/fnielsen/afinn/tree/master/afinn/data
+##
+##
+
+# setup the afinn "model"
+afinn = Afinn()
+
+# let's just start with something basic
+afinn.score("Today is a great day!")
+
+# let's try another
+afinn.score("Today is a bad day!")
+
+# Question:  What do you notice?  What happened (outside of getting a score)?
+
+# let's look at the data behind this
+URL = "https://raw.githubusercontent.com/fnielsen/afinn/master/afinn/data/AFINN-111.txt"
+ad = pd.read_csv(URL, sep='\t', header=None, names=['token', 'score'])
+ad.head(4)
+
+# summary
+ad.score.describe()
+
+# what are the values for score
+sns.distplot(ad.score)
+plt.show()
+
+# THOUGHT Exercise:  What stands out relative to the distribution and the summary stats?
+
+# we can inspect easily to wrap our heads around the words
+ROWS = ad.token.str.contains("stop")
+ad.loc[ROWS, :]
+
+# another search
+ROWS = ad.token.str.contains("lol")
+ad.loc[ROWS, :]
+
+# let's go back to a statement, see the score, and break it down
+
+doc = "love hate"
+afinn.score(doc)       # SCORE
+
+
+# what is the list of floats being used for the score
+afinn.scores(doc)  # SCORES 多个s
+
+# confirming that we can make ths more concrete, and that
+# the other words are not considered important for sentiment
+# in a lookup approach
+afinn.score("love hate relationship with this service")
+afinn.scores("love hate relationship with this service")
+
+# YOUR TURN
+##
+# there is a table on big query
+# datasets.bruins_twitter
+##
+
+# get the records where the hour is 0,1,2,3
+# this is not a select *, you have to filter records
+# - TRICKY: apply afinn sentiment to each record
+# - ensure that the data sorted by status_id
+# - plot the sentiment score over the records (this is a timeseries - like view)
+# - calculate the average sentiment by hour
+##
+##
+SQL = "SELECT * from `questrom.datasets.bruins_twitter` where hour IN (0,1,2,3)"
+PROJ = "ba820-yx"
+tweets = pd.read_gbq(SQL, PROJ)
+
+# quick review
+tweets.shape
+
+tweets.head(3)
+
+# bonus, if you wanted to parse the created at
+tweets['created'] = pd.to_datetime(tweets.created_at)
+
+tweets.head()
+
+# ok - sentiment
+
+
+def sent_score(text):
+    return afinn.score(text)
+
+
+tweets['sent'] = tweets.text.apply(sent_score)
+
+# what do we have
+tweets.sample(5)
+
+# plot over the series of the records
+# with status id, its somewhat like a timeseries
+tweets.sort_values("status_id", ascending=True, inplace=True)
+tweets.reset_index(drop=True, inplace=True)
+
+tweets.sent.plot(kind="line")
+
+# average by hour -- refer to 7 script for renaming cols if you like
+tweets.groupby("hour").agg({'sent': ['size', 'mean']})
+
+# lets look at two records
+IDS = [1204921609733070848, 1206041140165849089]
+# sent = 0,-1
+tweets.loc[tweets.status_id.isin(IDS), "text"].values
+
+# WHAT DO YOU NOTICE ABOVE
+# should these be slightly neutral or negative?
+
+afinn.score("empty")
+
+
+# Quick departure
+# word clouds
+# you may have clients ask about this
+##
+# let's break this down
+##
+
+URL = "https://getthematic.com/insights/word-clouds-harm-insights/"
+article = Article(URL)
+article.download()
+article.parse()
+
+
+# we will use the article text from here
+# expects a string, more or less, not a list, per se
+wc = WordCloud(background_color="white")
+wordcloud = wc.generate(article.text)
+
+# Display the  plot:
+plt.imshow(wordcloud)
+plt.axis("off")
+plt.show()
+
+# run above a few times, look for
+# 1- the color of word cloud, mullet, and themes
+# 2- the placement relative of customer, visualization and capture
+
+
+# THOUGHT EXPERIMENT/REVIEW OF ABOVE
+##
+# Ok, let's break this down
+# we have seen distance measures + PCA/TSNE/UMPA
+# in those situations, spatial placement matters
+# general best practices - color should mean something too
+# size in word clouds is fine
+# Takeaway:  this is really, really "fun" way to explore data
+# but hardly one that should ever be considered anlaytics or findings (IN MY OPINION)
+##
+# WHY?   How does the shape of sunglasses help us understand the data?
+# https://www.littlemissdata.com/blog/wordclouds
+##
+
+# Sentiment form TextBlob
+##
+# NLP toolkit that goes beyond sentiment, so worth exploring
+# we will see dive deeper into spacy on Wednesday, so this is a nice segue
+##
+# The general framework: we operate on a document, not a corpus
+# the document is parsed for a variety of NLP tasks
+##
+# POS, sentiment, noun-phrases, even spelling correction
+# we are adding this as a spacy pipeline, which extends the concept or corpus level assessment
+##
+
+# setup -- isolate the flow
+nlp = spacy.load("en_core_web_sm")
+nlp.add_pipe('spacytextblob')
+
+# a simple corpus to show the document orientation
+corpus3 = ["Today was a great day", "Today was a bad day"]
+
+# we will talk about spacy later
+# but this is iterating over the messages in the corpus effeciently
+# spacy naturally wants to operate on a corpus
+docs = list(nlp.pipe(corpus3))
+
+# lets look at the first
+doc = docs[0]
+
+# we can get the sentiment polarity
+doc._.polarity
+
+# the textblob toolkit also has a subjectivity estimator
+doc._.subjectivity
+
+
+# REVIEW
+# we can see above that we are still getting the objects, but we start to see some detail
+#
+# polarity = how positive/negative, which ranges from -1 to 1
+# subjectivity = 0 -> 1, or fact -> opinion
+# 极性，主观性
+#
+# not shown above, but textblob's model also handles modifier words which we will see in a moment
+#
+# ALSO: the model?  Trained on reviews that were labeled (movie reviews), and also draws from other projects
+#                   https://raw.githubusercontent.com/aesuli/SentiWordNet/master/data/SentiWordNet_3.0.0.txt
+#                   https://github.com/sloria/TextBlob/blob/90cc87ab0f9e25f37379079840ec43aba59af440/textblob/en/sentiments.py
+# Link below you can dive into the code for more view
+#                   https://github.com/sloria/TextBlob/blob/eb08c120d364e908646731d60b4e4c6c1712ff63/textblob/_text.py
+
+# lets go back to the results though, we can pull out the scores as needed
+sent = []
+for doc in corpus:
+    sent.append(TextBlob(doc).sentiment.polarity)
+
+sent
+
+# NOTE:  that unlike afinn, these are not balanced, but perhaps because there is more than
+# just a lookup
+
+# lets try some other examples
+nlp("great")._.polarity
+nlp("very great")._.polarity
+nlp("awesome very great")._.polarity
+nlp("not very great")._.polarity
+nlp("horrible")._.polarity
+nlp("not horrible")._.polarity
+
+
+# you can see above that there are some smarts baked into this
+# textblob is able to look at the words and modify as needed, based on the intensity of the word (not shown)
+#
+
+# one other note
+# Textblob ignores 1 letter words, just like sklearn does
+
+nlp("not a great toy")._.polarity
+nlp("not great toy")._.polarity
+
+# subjectivity?
+nlp("python is awesome")._.subjectivity
+nlp("python is easy to use")._.subjectivity
+nlp("python is free for everyone to use")._.subjectivity
+nlp("python is a programming language")._.subjectivity
+
+# Breakout
+##
+# We will use the same bruins twitter dataset above
+# refer to above if you want to re-query the data
+##
+##
+# calculate the polarity (sentiment) and subjectivity for each tweet
+# create a scatterplot to evaluate the both metrics for the dataset
+##
+# next plot the relationship between afinn score and textblob score
+##
+
+
+docs = list(nlp.pipe(tweets.text))
+
+polar = [doc._.polarity for doc in docs]
+subject = [doc._.subjectivity for doc in docs]
+
+tweets['polarity'] = polar
+tweets['subjectivity'] = subject
+
+tweets.head(3)
+
+# polarity/subjectivity
+sns.scatterplot(x="polarity", y="subjectivity", data=tweets)
+
+# affinn sent versus textblob polarity
+# sns.scatterplot(x="polarity", y="sent", data=tweets, alpha=.5)
+sns.lmplot(x="polarity", y="sent", data=tweets)
+plt.show()
+
+# Other Approaches: Vader sentiment
+# Very brief review
+# There are other approaches that attempt the modified approach
+# you should inspect them at a granular level to ensure that these work as you like
+##
+# But for sake of completeness, lets see the output
+##
+# for a deeper review on compound scores
+# https://stackoverflow.com/questions/40325980/how-is-the-vader-compound-polarity-score-calculated-in-python-nltk
+# -- sum of normalized scores, and is not directly related to the pos/negative/netural
+# https://github.com/cjhutto/vaderSentiment#about-the-scoring
+##
+# we get pos/neutral/negative distros
+# and a compound score which is what mostly used in practice
+# > .05 = positive
+# < -.05 = negative
+# else neutral
+##
+# like Textblob, its a model with modifiers and intensifiers
+# but this model was trained on social media, so perhaps it may fit your data better
+# AGAIN:  these tools help us get a report off the ground quickly, but we always should review
+##
+# if you play around with above, and test it, it might just show that some of these rule
+# approaches may not always be something we can use in production
+
+# API approach
+# APIs from cloud services on Google
+
+
+# Finally, a domain-specific ML approach
+##
+# Sometimes we need to roll our own
+##
+# What does this mean?
+# 1. collect a dataset
+# 2. annotate the data with our own business rules
+# --------> Label studio?
+# 3. we can use some of the tools above
+# ---------> generate a score, define a threshold, give labels
+# ---------> fit a model on labels
+# ---------> review, iterate, review, iterate
+##
+# Why build our own
+##
+# - out of the box generalize (thats a theme you have heard me say)
+# - domain specific words (for example, dataset above shows sports terms that are positive but not captured
+# - also, sarcasm is hard to detect even with modifier approaches
+##
+##
+
+# there is an airlines tweets dataset on biq query
+# bring in questrom.datasets.airlines-tweets
+# just the tweet_id, airline_sentiment, airline, and text columns
+
+SQL = "select tweet_id, airline_sentiment, airline, text from `questrom.datasets.airlines-tweets`"
+
+airlines = pd.read_gbq(SQL, "ba820-yx")
+
+airlines.shape
+
+airlines.head()
+
+# what do we have for a label distribution?
+airlines.airline_sentiment.value_counts(normalize=True)
+
+# lets assume our excellent back office staff has labeled these datasets properly
+# huge assumption, right!
+# we will parse the tweets, convert emojis, keep top 1000 vocab
+# and then create our own ML-based sentiment classifier
+
+
+# example of demojizing a text - just parses them out!
+txt = "great , but I have to go with #CarrieUnderwood 😍👌"
+emoji.demojize(txt)
+
+
+SW = stopwords.words('english')
+
+
+def tokenizer(text):
+    social = TweetTokenizer()
+    # replace emojis with string representations
+    text = emoji.demojize(text)
+    # if two emojis are stacked, add a whitespace in between
+    text = text.replace("::", ": :")
+    return social.tokenize(text)
+
+
+cv = CountVectorizer(tokenizer=tokenizer, stop_words=SW, max_features=1000)
+
+tokens = cv.fit_transform(airlines.text)
+
+adf = pd.DataFrame(tokens.toarray(), columns=cv.get_feature_names())
+
+adf.iloc[:5, :5]
+
+# top tokens
+adf.sum(axis=0).sort_values(ascending=False)
+
+# notice above, what could we do better?
+
+
+# regardless lets fit a decision tree classifier
+
+tree = DecisionTreeClassifier(
+    max_depth=5, min_samples_split=40, random_state=820)
+
+# validation
+X = tokens.toarray()
+y = airlines.airline_sentiment
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=.3, stratify=y)
+
+# fit the tree
+tree.fit(X_train, y_train)
+
+# apply the tree
+preds = tree.predict(X_test)
+
+# the report
+
+cr = classification_report(y_test, preds)
+print(cr)
+
+# how might you improve this?
+# think about the pipeline that we using to fit a model
+# YOUR TURN, fit another classifier

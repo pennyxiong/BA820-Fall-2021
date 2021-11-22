@@ -1,0 +1,15 @@
+{
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./BA820-Fall-2021",
+    "-p",
+    "*test.py"
+  ],
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestEnabled": true
+}
+pip install virtualenv
+virtualenv venv
+./venv/Scripts/activate.ps1
+python hello.py

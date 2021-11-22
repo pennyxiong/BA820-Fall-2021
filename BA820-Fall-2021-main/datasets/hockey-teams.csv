@@ -1,0 +1,32 @@
+Team,Abbrev,Division,GP,W,L,OL,PTS,PTS_pct,GF,GA,SRS,SOS,RPt_pct,ROW
+Tampa Bay Lightning*,TBL,Atlantic,82,62,16,4,128,0.78,325,222,1.21,-0.05,0.726,56
+Boston Bruins*,BOS,Atlantic,82,49,24,9,107,0.652,259,215,0.52,-0.01,0.604,47
+Toronto Maple Leafs*,TOR,Atlantic,82,46,28,8,100,0.61,286,251,0.42,-0.01,0.573,46
+Montreal Canadiens,MTL,Atlantic,82,44,30,8,96,0.585,249,236,0.16,0.0,0.518,41
+Florida Panthers,FLA,Atlantic,82,36,32,14,86,0.524,267,280,-0.14,0.02,0.463,33
+Buffalo Sabres,BUF,Atlantic,82,33,39,10,76,0.463,226,271,-0.51,0.04,0.39,28
+Detroit Red Wings,DET,Atlantic,82,32,40,10,74,0.451,227,277,-0.57,0.04,0.402,29
+Ottawa Senators,OTT,Atlantic,82,29,47,6,64,0.39,242,302,-0.69,0.05,0.36,29
+Washington Capitals*,WSH,Metropolitan,82,48,26,8,104,0.634,278,249,0.35,-0.01,0.567,44
+New York Islanders*,NYI,Metropolitan,82,48,27,7,103,0.628,228,196,0.38,-0.01,0.585,43
+Pittsburgh Penguins*,PIT,Metropolitan,82,44,26,12,100,0.61,273,241,0.38,-0.01,0.543,42
+Carolina Hurricanes*,CAR,Metropolitan,82,46,29,7,99,0.604,245,223,0.26,-0.01,0.561,44
+Columbus Blue Jackets*,CBJ,Metropolitan,82,47,31,4,98,0.598,258,232,0.31,-0.01,0.567,45
+Philadelphia Flyers,PHI,Metropolitan,82,37,37,8,82,0.5,244,281,-0.42,0.03,0.439,34
+New York Rangers,NYR,Metropolitan,82,32,36,14,78,0.476,227,272,-0.52,0.03,0.384,26
+New Jersey Devils,NJD,Metropolitan,82,31,41,10,72,0.439,222,275,-0.61,0.04,0.384,28
+Nashville Predators*,NSH,Central,82,47,29,6,100,0.61,240,214,0.31,-0.01,0.561,43
+Winnipeg Jets*,WPG,Central,82,47,30,5,99,0.604,272,244,0.33,-0.02,0.567,45
+St. Louis Blues*,STL,Central,82,45,28,9,99,0.604,247,223,0.28,-0.01,0.549,42
+Dallas Stars*,DAL,Central,82,43,32,7,93,0.567,210,202,0.09,0.0,0.53,42
+Colorado Avalanche*,COL,Central,82,38,30,14,90,0.549,260,246,0.17,-0.01,0.463,36
+Chicago Blackhawks,CHI,Central,82,36,34,12,84,0.512,270,292,-0.25,0.02,0.427,33
+Minnesota Wild,MIN,Central,82,37,36,9,83,0.506,211,237,-0.3,0.02,0.47,36
+Calgary Flames*,CGY,Pacific,82,50,25,7,107,0.652,289,227,0.7,-0.06,0.634,50
+San Jose Sharks*,SJS,Pacific,82,46,27,9,101,0.616,289,261,0.3,-0.04,0.579,46
+Vegas Golden Knights*,VEG,Pacific,82,43,32,7,93,0.567,249,230,0.19,-0.04,0.518,40
+Arizona Coyotes,ARI,Pacific,82,39,35,8,86,0.524,213,223,-0.14,-0.02,0.47,35
+Vancouver Canucks,VAN,Pacific,82,35,36,11,81,0.494,225,254,-0.35,0.01,0.427,29
+Anaheim Ducks,ANA,Pacific,82,35,37,10,80,0.488,199,251,-0.63,0.01,0.427,32
+Edmonton Oilers,EDM,Pacific,82,35,38,9,79,0.482,232,274,-0.51,0.01,0.427,32
+Los Angeles Kings,LAK,Pacific,82,31,42,9,71,0.433,202,263,-0.73,0.02,0.384,2

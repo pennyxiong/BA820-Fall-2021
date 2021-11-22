@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  label_studio:
+    image: heartexlabs/label-studio:latest
+    container_name: label_studio
+    ports:
+      - 8508:8080
+    volumes:
+      - ./data:/label-studio/data
+    environment:
+      - LABEL_STUDIO_USERNAME=brock@bu.edu
+      - LABEL_STUDIO_PASSWORD=labelstudio
+
